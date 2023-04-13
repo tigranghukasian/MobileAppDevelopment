@@ -16,7 +16,7 @@ class DataLoaderViewModel : ViewModel() {
     fun getArticles() {
         viewModelScope.launch {
             try {
-                val response = DataSource().loadNews()
+                val response = DataSource().fetchNews("US")
                 _newsResponse.postValue(Result.success(response))
             } catch (e: Exception) {
                 _newsResponse.postValue(Result.error(e))
