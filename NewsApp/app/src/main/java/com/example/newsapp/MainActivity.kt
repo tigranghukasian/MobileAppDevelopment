@@ -1,24 +1,39 @@
 package com.example.newsapp
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import com.example.newsapp.modules.NewsResponse
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.newsapp.com.example.newsapp.ArticlePage
+import com.example.newsapp.com.example.newsapp.MainPage
+import com.example.newsapp.com.example.newsapp.view_models.DataLoaderViewModel
+import com.example.newsapp.com.example.newsapp.view_models.Result
+import com.example.newsapp.modules.Article
 import com.example.newsapp.ui.theme.NewsAppTheme
 
+sealed class Destination(val route: String) {
+    object MainPage: Destination("mainPage")
+    object ArticlePage: Destination("articlePage/{articleId}") {
+        fun createRoute(articleIndex: Int) : String {
+            println("articlePage/$articleIndex")
+            return  "articlePage/$articleIndex";
+        }
+    }
+}
 class MainActivity : ComponentActivity() {
 
     val dataLoaderViewModel by viewModels<DataLoaderViewModel>()
@@ -28,16 +43,32 @@ class MainActivity : ComponentActivity() {
         dataLoaderViewModel.getArticles()
 
         setContent {
+            var isArticleOpen by remember { mutableStateOf(false) }
+            var clickedArticle by remember { mutableStateOf(Int)}
+
+
+
             NewsAppTheme {
                 val articlesResult = dataLoaderViewModel.newsResponse.observeAsState(Result.loading()).value
-
-                Column {
-                    /*Button(onClick = { dataLoaderViewModel.getArticles() }) {
-                        Text(text = "Get Posts")
-                    }*/
-
-                    ArticleList(articlesResult)
+                when (articlesResult) {
+                    is Result.Success -> {
+                        val navController = rememberNavController();
+                        NavigationAppHost(navController = navController, articlesResult.data.articles)
+                        println("NAVIGATION APP HOST")
+                        //MainPage(navController, articlesResult.data.articles)
+                    }
+                    is Result.Error -> {
+                        Text(text = "Error: ${articlesResult.exception.message}")
+                    }
+                    is Result.Loading -> {
+                        Image(
+                            painterResource(id = R.drawable.loading),
+                            "articleImage",
+                            modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                        );
+                    }
                 }
+
             }
         }
 
@@ -46,42 +77,25 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ArticleList(newsResult: Result<NewsResponse>) {
-
-
-    when (newsResult) {
-        is Result.Success -> {
-            val newsResponse = newsResult.data
-            println(newsResponse)
-            LazyColumn {
-                items(newsResponse.articles) { article ->
-                    Card(
-                        Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Column(
-                            Modifier.padding(8.dp)
-                        ) {
-                            article.imageUrl?.let { url ->
-                                val image = loadPicture(url, DEFAULT_IMAGE ).value
-                                image?.let { img ->
-                                    Image(bitmap = img.asImageBitmap(), "articleImage", modifier = Modifier.fillMaxWidth(), contentScale = ContentScale.Crop);
-                                }
-
-                            }
-                            article.title?.let { Text(text = it, style = MaterialTheme.typography.h5) }
-                            article.description?.let { Text(text = it, style = MaterialTheme.typography.body1) }
-                        }
-                    }
-                }
+fun NavigationAppHost(navController: NavHostController,articles:  List<Article>  ) {
+    NavHost(navController = navController, startDestination = "mainPage") {
+        composable(Destination.MainPage.route) { MainPage(navController, articles) }
+        composable(Destination.ArticlePage.route) { navBackStackEntry ->
+            val articleId = navBackStackEntry.arguments?.get("articleId")
+            println("FETCH ARTICLE INDEX " + articleId)
+            if(articleId == null) {
+                Toast.makeText(LocalContext.current, "Element is required", Toast.LENGTH_SHORT).show()
             }
-        }
-        is Result.Error -> {
-            Text(text = "Error: ${newsResult.exception.message}")
-        }
-        is Result.Loading -> {
-            Image(painterResource(id = R.drawable.loading), "articleImage", modifier = Modifier.fillMaxWidth().fillMaxHeight());
+            else {
+                //println(" ARTICLE INDEX IS " + articleIndex)
+                ArticlePage(articles[articleId.toString().toInt()])
+            }
+
         }
     }
+
 }
+
+
+
+
