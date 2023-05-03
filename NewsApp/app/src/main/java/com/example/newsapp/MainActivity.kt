@@ -40,55 +40,33 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dataLoaderViewModel.getArticles()
+        //dataLoaderViewModel.getArticles(dataLoaderViewModel.searchCategory.value)
 
         setContent {
-            var isArticleOpen by remember { mutableStateOf(false) }
-            var clickedArticle by remember { mutableStateOf(Int)}
-
-
-
             NewsAppTheme {
-                val articlesResult = dataLoaderViewModel.newsResponse.observeAsState(Result.loading()).value
-                when (articlesResult) {
-                    is Result.Success -> {
-                        val navController = rememberNavController();
-                        NavigationAppHost(navController = navController, articlesResult.data.articles)
-                        println("NAVIGATION APP HOST")
-                        //MainPage(navController, articlesResult.data.articles)
-                    }
-                    is Result.Error -> {
-                        Text(text = "Error: ${articlesResult.exception.message}")
-                    }
-                    is Result.Loading -> {
-                        Image(
-                            painterResource(id = R.drawable.loading),
-                            "articleImage",
-                            modifier = Modifier.fillMaxWidth().fillMaxHeight()
-                        );
-                    }
-                }
+                val navController = rememberNavController();
+                NavigationAppHost(navController = navController)
 
             }
         }
-
 
     }
 }
 
 @Composable
-fun NavigationAppHost(navController: NavHostController,articles:  List<Article>  ) {
+fun NavigationAppHost(navController: NavHostController) {
+
     NavHost(navController = navController, startDestination = "mainPage") {
-        composable(Destination.MainPage.route) { MainPage(navController, articles) }
+        composable(Destination.MainPage.route) { MainPage(navController)
+            println("NAVIGATION APP HOST ROUTE ")
+        }
         composable(Destination.ArticlePage.route) { navBackStackEntry ->
             val articleId = navBackStackEntry.arguments?.get("articleId")
-            println("FETCH ARTICLE INDEX " + articleId)
             if(articleId == null) {
                 Toast.makeText(LocalContext.current, "Element is required", Toast.LENGTH_SHORT).show()
             }
             else {
-                //println(" ARTICLE INDEX IS " + articleIndex)
-                ArticlePage(articles[articleId.toString().toInt()])
+                ArticlePage(articleId.toString().toInt())
             }
 
         }

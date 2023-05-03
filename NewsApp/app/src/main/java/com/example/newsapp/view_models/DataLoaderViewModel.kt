@@ -1,5 +1,7 @@
 package com.example.newsapp.com.example.newsapp.view_models
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,12 +15,15 @@ class DataLoaderViewModel : ViewModel() {
     private val _newsResponse = MutableLiveData<Result<NewsResponse>>();
     var newsResponse: LiveData<Result<NewsResponse>> = _newsResponse;
 
-    fun getArticles() {
+    private val _searchCategory = mutableStateOf("")
+    val searchCategory: State<String> = _searchCategory
+
+    fun getArticles(category: String) {
         viewModelScope.launch {
             try {
-                val response = DataSource().fetchNews("US")
+                val response = DataSource().fetchNews("US", category)
                 _newsResponse.postValue(Result.success(response))
-            } catch (e: Exception) {
+            } catch (e: Exception) {8
                 _newsResponse.postValue(Result.error(e))
             }
         }
