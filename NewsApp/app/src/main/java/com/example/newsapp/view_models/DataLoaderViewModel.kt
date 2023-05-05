@@ -18,10 +18,10 @@ class DataLoaderViewModel : ViewModel() {
     private val _searchCategory = mutableStateOf("")
     val searchCategory: State<String> = _searchCategory
 
-    fun getArticles(category: String) {
+    fun getArticles(category: String, searchValue: String = "") {
         viewModelScope.launch {
             try {
-                val response = DataSource().fetchNews("US", category)
+                val response = DataSource().fetchNews("US", category, searchValue)
                 _newsResponse.postValue(Result.success(response))
             } catch (e: Exception) {8
                 _newsResponse.postValue(Result.error(e))

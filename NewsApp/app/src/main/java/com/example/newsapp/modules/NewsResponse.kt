@@ -16,5 +16,14 @@ data class Article(
     @SerializedName("description")
     val description: String?,
     @SerializedName("urlToImage")
-    val  imageUrl : String?
+    val  imageUrl : String?,
+    @SerializedName("author")
+    val author : String?,
+    @SerializedName("source")
+    val source : Source?
+
 ) : Serializable
+data class Source (
+    @SerializedName("name")
+    val name: String?
+) :Serializable

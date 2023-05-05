@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -40,13 +43,22 @@ import kotlinx.coroutines.delay
 @Composable
 fun MainPage(navController: NavHostController) {
     val dataLoaderViewModel = viewModel<DataLoaderViewModel>()
-    dataLoaderViewModel.getArticles("")
-    val articlesResult = dataLoaderViewModel.newsResponse.observeAsState(Result.loading()).value
-    println("MAIN PAGE")
 
+    val articlesResult = dataLoaderViewModel.newsResponse.observeAsState(Result.loading()).value
+
+    var menuVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        dataLoaderViewModel.getArticles("")
+    }
     when (articlesResult) {
         is Result.Success -> {
-            Scaffold(bottomBar = { BottomFilterOptions() }) {
+            Scaffold(bottomBar = {
+
+                if(menuVisible) {
+                    BottomFilterOptions()
+                }})
+            {
                 Column {
                     Box(
                         Modifier.fillMaxWidth().height(130.dp).background(MaterialTheme.colors.primaryVariant)
@@ -58,6 +70,7 @@ fun MainPage(navController: NavHostController) {
                                 SearchField()
                                 Button(
                                     onClick = {
+                                              menuVisible = !menuVisible
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         backgroundColor = Color.White
@@ -102,6 +115,7 @@ fun BottomFilterOptions() {
     val dataLoaderViewModel = viewModel<DataLoaderViewModel>()
     val buttonLabels = listOf("Business", "Entertainment", "General", "Health")
     var selectedButtonIndex by remember { mutableStateOf(0) }
+
     Card(Modifier.fillMaxWidth().height(300.dp).background(Color.White)) {
         MultipleButtonsWithOneSelected(selectedButtonIndex, buttonLabels, onButtonClicked = {
                 index -> selectedButtonIndex = index
@@ -110,6 +124,7 @@ fun BottomFilterOptions() {
             //println("get articles with new category" + it.lowercase())
         })
     }
+
 
 }
 
@@ -174,10 +189,37 @@ fun SwipeRefreshCompose(navController: NavController, dataLoaderViewModel: DataL
 fun SearchField() {
     var text: String by remember { mutableStateOf("") }
 
+    val dataLoaderViewModel = viewModel<DataLoaderViewModel>()
+
     TextField(value = text, onValueChange = {
         text = it
+        OnSearchFieldValueChanged(text)
+    }, modifier = Modifier.padding(end = 20.dp),
+        leadingIcon = {
+            IconButton(onClick = {
+                dataLoaderViewModel.getArticles("", text)
+            })
+            {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "search Icon"
+                )
+            }
 
-    }, modifier = Modifier.padding(end = 20.dp), colors = TextFieldDefaults.textFieldColors(
+        },
+        trailingIcon = {
+            IconButton(onClick = {
+                text = ""
+            })
+            {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "clear Icon"
+                )
+            }
+
+        },
+        colors = TextFieldDefaults.textFieldColors(
         textColor = Color.DarkGray,
         backgroundColor = Color.White
     )

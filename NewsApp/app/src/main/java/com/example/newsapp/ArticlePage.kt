@@ -33,7 +33,7 @@ fun ArticlePage(articleId : Int ) {
 
 
     val dataLoaderViewModel = viewModel<DataLoaderViewModel>()
-    //dataLoaderViewModel.getArticles(dataLoaderViewModel.searchCategory.value)
+    dataLoaderViewModel.getArticles(dataLoaderViewModel.searchCategory.value)
     val articlesResult = dataLoaderViewModel.newsResponse.observeAsState(Result.loading()).value
 
     when (articlesResult) {
@@ -42,6 +42,8 @@ fun ArticlePage(articleId : Int ) {
             Column(
                 Modifier.padding(8.dp)
             ) {
+                article.source?.name?.let { Text(text = "source : $it", style = MaterialTheme.typography.h6) }
+                article.author?.let { Text(text = "author : $it", style = MaterialTheme.typography.h6) }
                 article.imageUrl?.let { url ->
                     val image = loadPicture(url, DEFAULT_IMAGE).value
                     image?.let { img ->
@@ -56,6 +58,7 @@ fun ArticlePage(articleId : Int ) {
                 }
                 article.title?.let { Text(text = it, style = MaterialTheme.typography.h5) }
                 article.description?.let { Text(text = it, style = MaterialTheme.typography.body1) }
+
             }
         }
 
