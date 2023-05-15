@@ -173,7 +173,7 @@ fun SwipeRefreshCompose(navController: NavController, dataLoaderViewModel: DataL
         state = rememberSwipeRefreshState(isRefreshing = refreshing),
         onRefresh = {
             refreshing = true
-            //dataLoaderViewModel.getArticles(dataLoaderViewModel.searchCategory.value)
+            dataLoaderViewModel.getArticles(dataLoaderViewModel.searchCategory.value)
                     },
     ) {
 

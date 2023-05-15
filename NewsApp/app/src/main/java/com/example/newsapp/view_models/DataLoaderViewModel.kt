@@ -18,6 +18,7 @@ class DataLoaderViewModel : ViewModel() {
     private val _searchCategory = mutableStateOf("")
     val searchCategory: State<String> = _searchCategory
 
+
     fun getArticles(category: String, searchValue: String = "") {
         viewModelScope.launch {
             try {
