@@ -15,7 +15,7 @@ To run these applications, set up an environment capable of running Kotlin apps,
 Android Studio
 Kotlin SDK
 
-###Installation
+### Installation
 Clone the repository to your local machine and open the project in Android Studio.
 
 bash
